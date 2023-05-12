@@ -1,7 +1,8 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 const { PrismaClient } = require("@prisma/client");
-var prisma = new PrismaClient();
+const crypto = require('crypto');
+const prisma = new PrismaClient();
 
 router.get('/login', function(req, res, next) {
   res.render('login', { title: 'Login' });
@@ -19,8 +20,11 @@ router.post('/login', async function(req, res, next) {
       res.status(401).send("Invalid email or password");
       return;
     }
-    
-    if (user.password === password) {
+
+    // Encrypt the password entered by the user
+    const encryptedPassword = crypto.createHash('sha256').update(password).digest('hex');
+
+    if (user.password === encryptedPassword) {
       // Redirect user based on their userType
       switch (user.usertype) {
         case "Admin":

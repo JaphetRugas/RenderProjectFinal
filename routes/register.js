@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const crypto = require('crypto');
 
 const {PrismaClient, Prisma, User} = require("@prisma/client")
 var prisma = new PrismaClient()
@@ -14,7 +15,12 @@ router.get('/register', async function(req, res, next) {
 /* POST register page. */
 router.post('/register', async function(req, res, next) {
   const { firstname, middlename, lastname, age, gender, contact_number, email, password, usertype } = req.body;
-  
+
+  // Encrypt password using SHA256
+  const hash = crypto.createHash('sha256');
+  hash.update(password);
+  const encryptedPassword = hash.digest('hex');
+
   try {
     const ageInt = parseInt(age, 10);
     const user = await prisma.user.create({
@@ -26,7 +32,7 @@ router.post('/register', async function(req, res, next) {
         gender,
         contact_number,
         email,
-        password,
+        password: encryptedPassword, // Store encrypted password
         usertype
       },
     });
@@ -40,5 +46,4 @@ router.post('/register', async function(req, res, next) {
     }
   }
 });
-
 module.exports = router;
