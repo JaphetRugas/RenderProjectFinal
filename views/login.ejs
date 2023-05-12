@@ -1,32 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>My Landing Page</title>
+	<title>Login</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-  <style>
+	<style>
     body {
-      font-family: Arial, sans-serif;
-    }
+	font-family: Arial, sans-serif;
+}
 
-    main {
-      padding-top: 50px;
-      padding-bottom: 50px;
-      text-align: center;
-      background-color: #f2f2f2;
-    }
+main {
+	padding-top: 50px;
+	padding-bottom: 50px;
+	text-align: center;
+	background-color: #f2f2f2;
+}
 
-    h1 {
-      font-size: 36px;
-      margin-bottom: 20px;
-      color: #007bff;
-    }
+h1 {
+	font-size: 36px;
+	margin-bottom: 20px;
+	color: #007bff;
+}
 
-    p {
-      font-size: 18px;
-      margin-bottom: 50px;
-      color: #555;
-    }
+form {
+	margin-top: 50px;
+}
+
+.form-group {
+	text-align: left;
+}
+
+.btn-primary {
+	background-color: #007bff;
+	border-color: #007bff;
+}
+
+.btn-primary:hover {
+	background-color: #0069d9;
+	border-color: #0062cc;
+}
+
+.btn-block {
+	margin-top: 20px;
+}
 
   </style>
 </head>
@@ -52,10 +68,19 @@
 	<main>
 		<div class="container">
 			<div class="row">
-				<div class="col-sm-12 col-md-8 offset-md-2">
-					<h1>Welcome to my landing page</h1>
-					<p>Here you can find information about our products and services.</p>
-					<button class="btn btn-light" onclick="location.href='/login'">Login</button>
+				<div class="col-sm-12 col-md-6 offset-md-3">
+					<h1>Login</h1>
+					<form>
+						<div class="form-group">
+							<label for="email">Email address</label>
+							<input type="email" class="form-control" id="email" placeholder="Enter email">
+						</div>
+						<div class="form-group">
+							<label for="password">Password</label>
+							<input type="password" class="form-control" id="password" placeholder="Password">
+						</div>
+						<button type="submit" class="btn btn-primary btn-block">Submit</button>
+					</form>
 				</div>
 			</div>
 		</div>

@@ -4,7 +4,7 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 
-var loginRouter = require('./routes/index');
+var loginRouter = require('./routes/login');
 var registerRouter = require('./routes/register'); 
 var adminRouter = require('./routes/adminhome'); 
 var managerRouter = require('./routes/managerhome'); 
@@ -40,9 +40,9 @@ app.use(function(err, req, res, next) {
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
+  // render the landing page
   res.status(err.status || 500);
-  res.render('error');
+  res.render('index');
 });
 
 module.exports = app;

@@ -8,7 +8,7 @@ var prisma = new PrismaClient
 router.get('/login', async function(req, res, next) {
   var users = await prisma.User.findMany()
 
-  res.render('index', { title: 'Express', users: users });
+  res.render('login', { title: 'Express', users: users });
 });
 
 
