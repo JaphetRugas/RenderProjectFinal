@@ -23,11 +23,22 @@
               <a class="nav-link" href="/admin/userdashboard">User</a>
             </li>
           </ul>
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/register">Create User</a>
+            </li>
+          </ul>
         </div>
       </div>
     </nav>
     <div class="container mt-5">
       <h1>Manager Dashboard</h1>
+      <form class="mt-3 mb-3" action="/admin/managerdashboard" method="get">
+        <div class="input-group">
+          <input type="text" name="q" class="form-control" placeholder="Search by name or email address" value="<%= query || '' %>">
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+      </form>
       <table class="table table-striped">
         <thead>
           <tr>
@@ -38,6 +49,7 @@
             <th>Gender</th>
             <th>Contact Number</th>
             <th>Password</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -52,18 +64,25 @@
                 <td><%= user.age %></td>
                 <td><%= user.gender %></td>
                 <td><%= user.contact_number %></td>
-                <td><%= user.password %></td>
+                <td><%= user.password.substr(0, 8) + '...' %></td>
+                <td>
+                  <div class="btn-group">
+                    <a class="btn btn-primary mr-2" href="/admin/edit/<%= user.id %>">Edit</a>
+                    <a class="btn btn-danger" href="/admin/delete/<%= user.id %>">Delete</a>
+                  </div>
+                </td>
               </tr>
               <% counter++ %>
             <% }); %>
           <% } else { %>
             <tr>
-              <td colspan="7">No users found</td>
+              <td colspan="8">No users found</td>
             </tr>
           <% } %>
         </tbody>
       </table>
     </div>
+    
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
