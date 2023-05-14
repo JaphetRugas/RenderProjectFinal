@@ -86,6 +86,25 @@ router.get('/admin/userdashboard', async function(req, res, next) {
   }
 });
 
+/* GET admin profile page. */ 
+router.get('/admin/adminprofile', async function(req, res, next) {
+  try {
+    const user = req.session.user; // Fetch the user data from session
+    if (!user || user.usertype !== 'Admin') {
+      // If user is not logged in or not an admin, redirect to login page
+      res.redirect('/login');
+      return;
+    }
+
+    res.render('admin/adminprofile', { title: 'Admin Profile', user: user });
+  } catch (err) {
+    console.error(err)
+    next(err)
+  }
+});
+
+
+
 /* GET logout page. */
 router.get('/admin/logout', function(req, res, next) {
   req.session.destroy(err => {
