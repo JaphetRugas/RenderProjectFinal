@@ -34,15 +34,33 @@ app.use(function(req, res, next) {
   next(createError(404));
 });
 
-// error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the landing page
-  res.status(err.status || 500);
-  res.render('index');
+  // check if the user is logged in
+  if (req.session.user) {
+    // render the appropriate page based on the user type
+    switch (req.session.user.usertype) {
+      case 'Admin':
+        res.redirect('/admin/admindashboard');
+        break;
+      case 'Manager':
+        res.redirect('/manager/manager');
+        break;
+      case 'User':
+        res.redirect('/user/user');
+        break;
+      default:
+        res.status(400).send('Invalid userType');
+    }
+  } else {
+    // user is not logged in, render the landing page
+    res.status(err.status || 500);
+    res.render('index');
+  }
 });
+
 
 module.exports = app;

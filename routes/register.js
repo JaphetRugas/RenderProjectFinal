@@ -1,15 +1,27 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const session = require('express-session');
 const crypto = require('crypto');
+const { PrismaClient } = require("@prisma/client");
 
-const {PrismaClient, Prisma, User} = require("@prisma/client")
-var prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-/* GET home page. */
+// Initialize the session middleware
+router.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true
+}));
+
+/* GET register page. */
 router.get('/register', async function(req, res, next) {
-  var users = await prisma.user.findMany()
-
-  res.render('register', { title: 'Express', users: users });
+  // Check if user is authenticated
+  if (req.session.user) {
+    var users = await prisma.user.findMany()
+    res.render('register', { title: 'Register', users: users });
+  } else {
+    res.redirect('/login');
+  }
 });
 
 /* POST register page. */
@@ -36,14 +48,15 @@ router.post('/register', async function(req, res, next) {
         usertype
       },
     });
-    res.redirect('/index');
+    res.redirect('/register');
   } catch (error) {
     if (error.code === 'P2002') {
-      res.status(400).render('register', { title: 'Express', error: 'Email already exists.' });
+      res.status(400).render('register', { title: 'Register', error: 'Email already exists.' });
     } else {
       console.error(error);
-      res.status(500).render('register', { title: 'Express', error: 'Something went wrong. Please try again later.' });
+      res.status(500).render('register', { title: 'Register', error: 'Something went wrong. Please try again later.' });
     }
   }
 });
+
 module.exports = router;
