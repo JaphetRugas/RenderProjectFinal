@@ -103,6 +103,47 @@ router.get('/admin/adminprofile', async function(req, res, next) {
   }
 });
 
+/* GET admin profile delete confirmation page. */ 
+router.get('/admin/adminprofiledelete', async function(req, res, next) {
+  try {
+    const user = req.session.user; // Fetch the user data from session
+    if (!user || user.usertype !== 'Admin') {
+      // If user is not logged in or not an admin, redirect to login page
+      res.redirect('/login');
+      return;
+    }
+
+    res.render('admin/adminprofiledelete', { title: 'Delete Admin Profile', user: user });
+  } catch (err) {
+    console.error(err)
+    next(err)
+  }
+});
+
+/* POST admin profile delete confirmation page. */
+router.post('/admin/adminprofiledeleteconfirm', async function(req, res, next) {
+  try {
+    const user = req.session.user; // Fetch the user data from session
+
+    if (!user || user.usertype !== 'Admin') {
+      // If user is not logged in or not an admin, redirect to login page
+      res.redirect('/login');
+      return;
+    }
+
+    // Delete the user account from the database
+    await prisma.user.delete({
+      where: { id: user.id }
+    });
+
+    // Clear the user data from the session and redirect to login page
+    req.session.user = null;
+    res.redirect('/login');
+  } catch (err) {
+    console.error(err)
+    next(err)
+  }
+});
 
 
 /* GET logout page. */
