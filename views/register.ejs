@@ -49,66 +49,51 @@
   </nav>
   
 
-<div class="container mt-5">
-  <h2 class="mb-3">Registration Form</h2>
-  <form action="/register" method="post">
-    <div class="row">
-      <div class="col-md-4 mb-3">
-        <label for="first_name">First Name:</label>
-        <input type="text" class="form-control" id="first_name" placeholder="Enter first name" name="firstname">
+  <div class="container mt-5">
+    <h2 class="mb-3">Registration Form</h2>
+    <form action="/register" method="post">
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="first_name">First Name:</label>
+          <input type="text" class="form-control" id="first_name" placeholder="Enter first name" name="firstname">
+        </div> 
+        <div class="col-md-4 mb-3">
+          <label for="last_name">Last Name:</label>
+          <input type="text" class="form-control" id="last_name" placeholder="Enter last name" name="lastname">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label for="gender">Gender:</label>
+          <select class="form-control" id="gender" name="gender">
+            <option selected disabled>Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div> 
       </div>
-      <div class="col-md-4 mb-3">
-        <label for="middle_name">Middle Name:</label>
-        <input type="text" class="form-control" id="middle_name" placeholder="Enter middle name" name="middlename">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="email">Email address:</label>
+          <input type="email" class="form-control" id="email" placeholder="Enter email" name="email">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label for="password">Password:</label>
+          <input type="password" class="form-control" id="password" placeholder="Enter password" name="password">
+        </div>
       </div>
-      <div class="col-md-4 mb-3">
-        <label for="last_name">Last Name:</label>
-        <input type="text" class="form-control" id="last_name" placeholder="Enter last name" name="lastname">
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="user_type">User Type:</label>
+          <select class="form-control" id="user_type" name="usertype">
+            <option selected disabled>Select User Type</option>
+            <option value="Admin">Admin</option>
+            <option value="Manager">Manager</option>
+            <option value="User">User</option>
+          </select>
+        </div>
       </div>
-    </div>
-    <div class="row">
-      <div class="col-md-4 mb-3">
-        <label for="age">Age:</label>
-        <input type="number" class="form-control" id="age" placeholder="Enter age" name="age" min="0">
-      </div>
-      <div class="col-md-4 mb-3">
-        <label for="gender">Gender:</label>
-        <select class="form-control" id="gender" name="gender">
-          <option selected disabled>Select Gender</option>
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-      <div class="col-md-4 mb-3">
-        <label for="contact_number">Contact Number:</label>
-        <input type="number" class="form-control" id="contact_number" placeholder="Enter contact number" name="contact_number">
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-6 mb-3">
-        <label for="email">Email address:</label>
-        <input type="email" class="form-control" id="email" placeholder="Enter email" name="email">
-	</div>
-	<div class="col-md-6 mb-3">
-	<label for="password">Password:</label>
-	<input type="password" class="form-control" id="password" placeholder="Enter password" name="password">
-	</div>
-	</div>
-	<div class="row">
-	<div class="col-md-6 mb-3">
-	<label for="user_type">User Type:</label>
-	<select class="form-control" id="user_type" name="usertype">
-	<option selected disabled>Select User Type</option>
-	<option value="Admin">Admin</option>
-	<option value="Manager">Manager</option>
-	<option value="User">User</option>
-	</select>
-	</div>
-	</div>
-	<button type="submit" class="btn btn-primary mt-3">Register</button>
-	
-	  </form>
-	</div>
+      <button type="submit" class="btn btn-primary mt-3">Register</button>
+    </form>
+  </div>
 	</body>
 	</html>

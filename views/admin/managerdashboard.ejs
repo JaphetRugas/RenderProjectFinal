@@ -14,6 +14,9 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="/admin/profile">Profile</a>
+            </li>  
+            <li class="nav-item">
               <a class="nav-link" aria-current="page" href="/admin/logout">Logout</a>
             </li>  
           </ul> 
@@ -57,10 +60,7 @@
           <tr>
             <th>ID</th>
             <th>Name</th>
-            <th>Email</th>
-            <th>Age</th>
-            <th>Gender</th>
-            <th>Contact Number</th>
+            <th>Email</th> 
             <th>Password</th>
             <th>Action</th>
           </tr>
@@ -72,11 +72,8 @@
             <% filteredUsers.forEach(function(user) { %>
               <tr>
                 <td><%= counter %></td>
-                <td><%= user.firstname %> <%= user.middlename ? user.middlename + ' ' : '' %><%= user.lastname %></td>
-                <td><%= user.email %></td>
-                <td><%= user.age %></td>
-                <td><%= user.gender %></td>
-                <td><%= user.contact_number %></td>
+                <td><%= user.firstname %> <%= user.lastname %></td>
+                <td><%= user.email %></td> 
                 <td><%= user.password.substr(0, 8) + '...' %></td>
                 <td>
                   <div class="btn-group">

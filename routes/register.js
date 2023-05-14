@@ -26,23 +26,18 @@ router.get('/register', async function(req, res, next) {
 
 /* POST register page. */
 router.post('/register', async function(req, res, next) {
-  const { firstname, middlename, lastname, age, gender, contact_number, email, password, usertype } = req.body;
+  const { firstname, lastname, email, password, usertype } = req.body;
 
   // Encrypt password using SHA256
   const hash = crypto.createHash('sha256');
   hash.update(password);
   const encryptedPassword = hash.digest('hex');
 
-  try {
-    const ageInt = parseInt(age, 10);
+  try { 
     const user = await prisma.user.create({
       data: {
-        firstname,
-        middlename,
-        lastname,
-        age: ageInt,
-        gender,
-        contact_number,
+        firstname, 
+        lastname, 
         email,
         password: encryptedPassword, // Store encrypted password
         usertype
