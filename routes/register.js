@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const session = require('express-session');
 const crypto = require('crypto');
-const { PrismaClient, PrismaClientValidationError } = require("@prisma/client");
+const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
@@ -38,11 +38,11 @@ router.post('/register', async function(req, res, next) {
     const user = await prisma.user.create({
       data: {
         firstname,
-        middlename: middlename ? middlename : undefined,
+        middlename,
         lastname,
         age: ageInt,
-        gender: gender ? gender : undefined,
-        contact_number: contact_number ? contact_number : undefined,
+        gender,
+        contact_number,
         email,
         password: encryptedPassword, // Store encrypted password
         usertype
@@ -50,10 +50,7 @@ router.post('/register', async function(req, res, next) {
     });
     res.redirect('/register');
   } catch (error) {
-    if (error instanceof PrismaClientValidationError) {
-      const message = error.message.replace(/Unknown arg `(.*)` in data\.(.*) for type .*/, 'Unknown field `$1` in `$2`.');
-      res.status(400).render('register', { title: 'Register', error: message });
-    } else if (error.code === 'P2002') {
+    if (error.code === 'P2002') {
       res.status(400).render('register', { title: 'Register', error: 'Email already exists.' });
     } else {
       console.error(error);
