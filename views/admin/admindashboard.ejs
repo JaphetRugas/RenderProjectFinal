@@ -70,8 +70,7 @@
           <% if (filteredUsers.length > 0) { %>
             <% filteredUsers.forEach(function(user) { %>
               <tr>
-                <td><%= counter %></td>
-                <td><%= user.firstname %> <%= user.middlename ? user.middlename + ' ' : '' %><%= user.lastname %></td>
+                <td><%= counter %></td> 
                 <td><%= user.email %></td>
                 <td><%= user.age %></td>
                 <td><%= user.gender %></td>
