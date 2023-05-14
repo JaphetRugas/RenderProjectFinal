@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+const crypto = require('crypto');
 
 const {PrismaClient} = require("@prisma/client")
 const prisma = new PrismaClient()
@@ -112,6 +113,13 @@ router.get('/admin/adminprofiledelete', async function(req, res, next) {
       res.redirect('/login');
       return;
     }
+    
+    // Check if the user email matches the email to be protected
+    //  if (user.email === 'mjjrrugas@tip.edu.ph') {
+    //   res.send('Deletion of this account is not allowed.'); // Send a message that deletion is not allowed
+    //   return;
+    // }
+
 
     res.render('admin/adminprofiledelete', { title: 'Delete Admin Profile', user: user });
   } catch (err) {
@@ -131,6 +139,12 @@ router.post('/admin/adminprofiledeleteconfirm', async function(req, res, next) {
       return;
     }
 
+    if (user.email === 'mjjrrugas@tip.edu.ph') {
+      // If the user's email is mjjrrugas@tip.edu.ph, do not delete the account
+      res.render('admin/adminprofiledelete', { title: 'Delete Admin Profile', user: user, error: 'Deletion of this account is not allowed.' });
+      return;
+    }
+
     // Delete the user account from the database
     await prisma.user.delete({
       where: { id: user.id }
@@ -142,6 +156,48 @@ router.post('/admin/adminprofiledeleteconfirm', async function(req, res, next) {
   } catch (err) {
     console.error(err)
     next(err)
+  }
+});
+
+/* POST update password page. */
+router.post('/admin/updatepassword', async function(req, res, next) {
+  try {
+    const user = req.session.user; // Fetch the user data from session
+    const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+    // Check if the old password matches the registered password
+    const hash = crypto.createHash('sha256');
+    hash.update(oldPassword);
+    const encryptedOldPassword = hash.digest('hex');
+    if (encryptedOldPassword !== user.password) {
+      // If the old password does not match, show an error message
+      res.render('admin/adminprofile', { error: 'Incorrect old password.' });
+      return;
+    }
+
+    // Check if the new password and confirm password match
+    if (newPassword !== confirmNewPassword) {
+      // If the new password and confirm password do not match, show an error message
+      res.render('admin/adminprofile', { error: 'New password and confirm password do not match.' });
+      return;
+    }
+
+    // Encrypt the new password using SHA256
+    const hash2 = crypto.createHash('sha256');
+    hash2.update(newPassword);
+    const encryptedNewPassword = hash2.digest('hex');
+
+    // Update the user's password in the database
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: encryptedNewPassword }
+    });
+
+    // Redirect to dashboard page with success message
+    res.render('admin/adminprofile', { success: 'Password updated successfully.' });
+  } catch (err) {
+    console.error(err);
+    next(err);
   }
 });
 

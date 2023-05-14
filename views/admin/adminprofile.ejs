@@ -29,34 +29,42 @@
         <div class="row">
           <div class="col-md-6">
             <form>
-              <div class="mb-3">
-                <label for="inputName" class="form-label">Name</label>
-                <input type="text" class="form-control" id="inputName" value="<%= user.firstname %> <%= user.lastname %>" readonly>
-              </div>
-              <div class="mb-3">
-                <label for="inputEmail" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="inputEmail" value="<%= user.email %>">
-              </div>
-              <button type="submit" class="btn btn-primary">Update</button>
-              <a href="/admin/adminprofiledelete" class="btn btn-danger">Delete account</a>      
+                <div class="mb-3">
+                    <label for="inputName" class="form-label">Name</label>
+                    <input type="text" class="form-control" id="inputName" value="<%= user.firstname %> <%= user.lastname %>" readonly>
+                </div>
+                <div class="mb-3">
+                    <label for="inputEmail" class="form-label">Email address</label>
+                    <input type="email" class="form-control" id="inputEmail" value="<%= user.email %>">
+                </div>
+                <% if (user.email === 'mjjrrugas@tip.edu.ph') { %>
+                    <button type="submit" class="btn btn-primary" disabled>Update</button>
+                    <button type="button" class="btn btn-danger" onclick="alert('This account cannot be deleted.');">Delete account</button>
+                <% } else { %>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                    <a href="/admin/adminprofiledelete" class="btn btn-danger">Delete account</a>
+                <% } %>
+                              
             </form>
+            
+              
           </div>
           <div class="col-md-6">
-            <form>
-              <div class="mb-3">
-                <label for="inputOldPassword" class="form-label">Old password</label>
-                <input type="password" class="form-control" id="inputOldPassword">
-              </div>
-              <div class="mb-3">
-                <label for="inputNewPassword" class="form-label">New password</label>
-                <input type="password" class="form-control" id="inputNewPassword">
-              </div>
-              <div class="mb-3">
-                <label for="inputConfirmPassword" class="form-label">Confirm new password</label>
-                <input type="password" class="form-control" id="inputConfirmPassword">
-              </div>
-              <button type="submit" class="btn btn-primary">Update password</button>
-            </form>
+            <form method="POST" action="/admin/updatepassword">
+                <div class="mb-3">
+                  <label for="inputOldPassword" class="form-label">Old password</label>
+                  <input type="password" class="form-control" id="inputOldPassword" name="oldPassword" required>
+                </div>
+                <div class="mb-3">
+                  <label for="inputNewPassword" class="form-label">New password</label>
+                  <input type="password" class="form-control" id="inputNewPassword" name="newPassword" required>
+                </div>
+                <div class="mb-3">
+                  <label for="inputConfirmPassword" class="form-label">Confirm new password</label>
+                  <input type="password" class="form-control" id="inputConfirmPassword" name="confirmNewPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Update password</button>
+              </form>              
           </div>
         </div>
       </div>
