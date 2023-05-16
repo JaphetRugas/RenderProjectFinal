@@ -226,10 +226,9 @@ router.post('/admin/updatepassword', async function(req, res, next) {
 /* POST delete manager record */
 router.post('/admin/admindeletemanager', async function(req, res, next) {
   try {
-    const { userId, password } = req.body; // Get user ID and password from request body
-    const adminUser = req.session.user; // Fetch the admin user data from session
+    const { userId, password } = req.body;
+    const adminUser = req.session.user;
     if (!adminUser || adminUser.usertype !== 'Admin') {
-      // If user is not logged in or not an admin, redirect to login page
       res.redirect('/login');
       return;
     }
@@ -239,9 +238,10 @@ router.post('/admin/admindeletemanager', async function(req, res, next) {
     hash.update(password);
     const encryptedPassword = hash.digest('hex');
 
-    // Compare the entered password with the stored admin password
+    // Compare the encrypted password with the stored encrypted password
     if (encryptedPassword !== adminUser.password) {
-      throw new Error('Invalid password');
+      res.redirect('/admin/managerdashboard');
+      return;
     }
 
     // Delete the manager record from the database
