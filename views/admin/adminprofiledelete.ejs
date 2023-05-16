@@ -30,10 +30,11 @@
             <p>Please confirm your password to delete your account:</p>
             <form action="/admin/adminprofiledeleteconfirm" method="POST">
               <div class="mb-3">
-                <label for="inputPassword" class="form-label">Password</label>
-                <input type="password" class="form-control" id="inputPassword" name="password">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
               </div>
               <button type="submit" class="btn btn-danger">Confirm Deletion</button>
+              <a class="btn btn-secondary" href="/admin/adminprofile">Cancel</a>
             </form>
           </div>
         </div>
@@ -47,4 +48,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
     <!-- Bootstrap Bundle -->
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/js/bootstrap.bundle.min.js"></script>
+
+    </body>
+    </html>
     

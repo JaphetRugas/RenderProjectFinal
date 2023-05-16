@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 
 const {PrismaClient} = require("@prisma/client")
 const prisma = new PrismaClient()
@@ -115,10 +116,11 @@ router.get('/admin/adminprofiledelete', async function(req, res, next) {
     }
     
     // Check if the user email matches the email to be protected
-    //  if (user.email === 'mjjrrugas@tip.edu.ph') {
-    //   res.send('Deletion of this account is not allowed.'); // Send a message that deletion is not allowed
-    //   return;
-    // }
+    if (user.email === 'mjjrrugas@tip.edu.ph') {
+      // Redirect to admin profile page
+      res.redirect('/admin/adminprofile');
+      return;
+    }
 
 
     res.render('admin/adminprofiledelete', { title: 'Delete Admin Profile', user: user });
@@ -127,6 +129,7 @@ router.get('/admin/adminprofiledelete', async function(req, res, next) {
     next(err)
   }
 });
+   
 
 /* POST admin profile delete confirmation page. */
 router.post('/admin/adminprofiledeleteconfirm', async function(req, res, next) {
@@ -139,10 +142,26 @@ router.post('/admin/adminprofiledeleteconfirm', async function(req, res, next) {
       return;
     }
 
+    const password = req.body.password; // Get the password from the request body
+
+    // Retrieve the hashed password from the database
+    const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
+    const storedPassword = dbUser.password;
+
+    // Hash the entered password using SHA256
+    const hash = crypto.createHash('sha256');
+    hash.update(password);
+    const enteredPassword = hash.digest('hex');
+
+    // Check if the entered password matches the stored password
+    if (enteredPassword !== storedPassword) {
+      // If passwords don't match, render the delete confirmation page with an error message
+      return res.render('admin/adminprofiledelete', { title: 'Delete Admin Profile', user: user, error: 'Incorrect password. Deletion failed.' });
+    }
+
     if (user.email === 'mjjrrugas@tip.edu.ph') {
       // If the user's email is mjjrrugas@tip.edu.ph, do not delete the account
-      res.render('admin/adminprofiledelete', { title: 'Delete Admin Profile', user: user, error: 'Deletion of this account is not allowed.' });
-      return;
+      return res.render('admin/adminprofiledelete', { title: 'Delete Admin Profile', user: user, error: 'Deletion of this account is not allowed.' });
     }
 
     // Delete the user account from the database
@@ -154,10 +173,13 @@ router.post('/admin/adminprofiledeleteconfirm', async function(req, res, next) {
     req.session.user = null;
     res.redirect('/login');
   } catch (err) {
-    console.error(err)
-    next(err)
+    console.error(err);
+    next(err);
   }
 });
+
+
+
 
 /* POST update password page. */
 router.post('/admin/updatepassword', async function(req, res, next) {
@@ -200,6 +222,37 @@ router.post('/admin/updatepassword', async function(req, res, next) {
     next(err);
   }
 });
+ 
+/* POST delete manager record */
+router.post('/admin/admindeletemanager', async function(req, res, next) {
+  try {
+    const { userId, password } = req.body; // Get user ID and password from request body
+    const adminUser = req.session.user; // Fetch the admin user data from session
+    if (!adminUser || adminUser.usertype !== 'Admin') {
+      // If user is not logged in or not an admin, redirect to login page
+      res.redirect('/login');
+      return;
+    }
+
+    // Encrypt the entered password using SHA256
+    const hash = crypto.createHash('sha256');
+    hash.update(password);
+    const encryptedPassword = hash.digest('hex');
+
+    // Compare the entered password with the stored admin password
+    if (encryptedPassword !== adminUser.password) {
+      throw new Error('Invalid password');
+    }
+
+    // Delete the manager record from the database
+    await prisma.user.delete({ where: { id: userId } });
+    res.redirect('/admin/managerdashboard');
+  } catch (err) {
+    console.error(err);
+    res.render('admin/managerdashboard', { title: 'Manager Dashboard', user: adminUser, error: 'Error occurred during deletion. Please try again.' });
+  }
+});
+
 
 
 /* GET logout page. */
