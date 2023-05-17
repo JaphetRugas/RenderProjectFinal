@@ -77,12 +77,14 @@
                 <td><%= user.password.substr(0, 8) + '...' %></td>
                 <td>
                   <div class="btn-group">
-                    <a class="btn btn-primary mr-2" href="">Edit</a> 
+                    <!-- Edit button in the table -->
+                    <form action="/admin/admineditmanager" method="post">
+                      <input type="hidden" name="userId" value="<%= user.id %>">
+                      <button type="submit" class="btn btn-primary mr-2">Edit</button>
+                    </form>                    
                     <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal<%= user.id %>">Delete</button>
                   </div>
-                </td>
-
-                <!-- Add the following code outside the table loop -->
+                </td> 
                 <!-- Modal for admin confirmation -->
                 <% filteredUsers.forEach(function(user) { %>
                   <div class="modal fade" id="confirmDeleteModal<%= user.id %>" tabindex="-1" aria-labelledby="confirmDeleteModalLabel<%= user.id %>" aria-hidden="true">

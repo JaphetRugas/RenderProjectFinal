@@ -3,7 +3,8 @@ var router = express.Router();
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 
-const {PrismaClient} = require("@prisma/client")
+const {PrismaClient} = require("@prisma/client");
+const { clearScreenDown } = require('readline');
 const prisma = new PrismaClient()
 
 /* GET admin page. */
@@ -252,6 +253,249 @@ router.post('/admin/admindeletemanager', async function(req, res, next) {
     res.render('admin/managerdashboard', { title: 'Manager Dashboard', user: adminUser, error: 'Error occurred during deletion. Please try again.' });
   }
 });
+
+
+
+
+// GET admin edit manager page
+router.post('/admin/admineditmanager', async function(req, res, next) {
+  try {
+    const user = req.session.user; // Fetch the user data from session
+    if (!user || user.usertype !== 'Admin') {
+      // If user is not logged in or not an admin, redirect to login page
+      res.redirect('/login');
+      return;
+    }
+
+    const { userId } = req.body; // Retrieve the user ID from the request body
+
+    // Fetch the user record from the database
+    const selectedUser = await prisma.user.findUnique({
+      where: { id: String(userId) } // Convert id to string
+    });
+
+    res.render('admin/admineditmanager', {
+      title: 'Edit Manager Data',
+      user: selectedUser,
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
+
+
+// POST admin edit manager record
+router.post('/admin/admineditmanagerrecord', async function(req, res, next) {
+  try {
+    const user = req.session.user; // Fetch the user data from session
+    if (!user || user.usertype !== 'Admin') {
+      // If user is not logged in or not an admin, redirect to login page
+      res.redirect('/login');
+      return;
+    }
+
+    const { userId, email, usertype } = req.body; // Retrieve the form data
+
+    // Update the user record in the database
+    const updatedUser = await prisma.user.update({
+      where: { id: String(userId) }, // Convert id to string
+      data: { email, usertype }
+    });
+    
+     // Render the edit manager page with the updated user data
+     res.render('admin/admineditmanager', {
+      title: 'Edit Manager Data',
+      user: updatedUser
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
+// POST admin update manager password
+router.post('/admin/adminupdatemanagerpassword', async function(req, res, next) {
+  try {
+    const user = req.session.user; // Fetch the user data from session
+    if (!user || user.usertype !== 'Admin') {
+      // If user is not logged in or not an admin, redirect to login page
+      res.redirect('/login');
+      return;
+    }
+
+    const { userId, newPassword, confirmPassword } = req.body; // Retrieve the form data
+
+    if (newPassword !== confirmPassword) {
+      // Passwords don't match, handle the error
+      res.render('admin/admineditmanager', {
+        title: 'Update Manager Password',
+        user: { id: userId },
+        error: 'Passwords do not match.'
+      });
+      return;
+    }
+
+    // Encrypt the entered password using SHA256
+    const hash = crypto.createHash('sha256');
+    hash.update(newPassword);
+    const encryptedPassword = hash.digest('hex');
+
+    // Update the user password in the database
+    const updatedUser = await prisma.user.update({
+      where: { id: String(userId) }, // Convert id to string
+      data: { password: encryptedPassword }
+    });
+
+    // Render the edit manager page with the updated user data
+    res.render('admin/admineditmanager', {
+      title: 'Edit Manager Data',
+      user: updatedUser
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
+
+
+/* POST delete user record */
+router.post('/admin/admindeleteuser', async function(req, res, next) {
+  try {
+    const { userId, password } = req.body;
+    const userUser = req.session.user;
+    if (!userUser || userUser.usertype !== 'Admin') {
+      res.redirect('/login');
+      return;
+    }
+
+    // Encrypt the entered password using SHA256
+    const hash = crypto.createHash('sha256');
+    hash.update(password);
+    const encryptedPassword = hash.digest('hex');
+
+    // Compare the encrypted password with the stored encrypted password
+    if (encryptedPassword !== userUser.password) {
+      res.redirect('/admin/userdashboard');
+      return;
+    }
+
+    // Delete the User record from the database
+    await prisma.user.delete({ where: { id: userId } });
+    res.redirect('/admin/userdashboard');
+  } catch (err) {
+    console.error(err);
+    res.render('admin/userdashboard', { title: 'User Dashboard', user: userUser, error: 'Error occurred during deletion. Please try again.' });
+  }
+});
+
+
+
+
+// GET admin edit user page
+router.post('/admin/adminedituser', async function(req, res, next) {
+  try {
+    const user = req.session.user; // Fetch the user data from session
+    if (!user || user.usertype !== 'Admin') {
+      // If user is not logged in or not an admin, redirect to login page
+      res.redirect('/login');
+      return;
+    }
+
+    const { userId } = req.body; // Retrieve the user ID from the request body
+
+    // Fetch the user record from the database
+    const selectedUser = await prisma.user.findUnique({
+      where: { id: String(userId) } // Convert id to string
+    });
+
+    res.render('admin/adminedituser', {
+      title: 'Edit User Data',
+      user: selectedUser,
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
+
+
+// POST admin edit user record
+router.post('/admin/adminedituserrecord', async function(req, res, next) {
+  try {
+    const user = req.session.user; // Fetch the user data from session
+    if (!user || user.usertype !== 'Admin') {
+      // If user is not logged in or not an admin, redirect to login page
+      res.redirect('/login');
+      return;
+    }
+
+    const { userId, email, usertype } = req.body; // Retrieve the form data
+
+    // Update the user record in the database
+    const updatedUser = await prisma.user.update({
+      where: { id: String(userId) }, // Convert id to string
+      data: { email, usertype }
+    });
+    
+     // Render the edit user page with the updated user data
+     res.render('admin/adminedituser', {
+      title: 'Edit User Data',
+      user: updatedUser
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
+// POST admin update user password
+router.post('/admin/adminupdateuserpassword', async function(req, res, next) {
+  try {
+    const user = req.session.user; // Fetch the user data from session
+    if (!user || user.usertype !== 'Admin') {
+      // If user is not logged in or not an admin, redirect to login page
+      res.redirect('/login');
+      return;
+    }
+
+    const { userId, newPassword, confirmPassword } = req.body; // Retrieve the form data
+
+    if (newPassword !== confirmPassword) {
+      // Passwords don't match, handle the error
+      res.render('admin/adminedituser', {
+        title: 'Update User Password',
+        user: { id: userId },
+        error: 'Passwords do not match.'
+      });
+      return;
+    }
+
+    // Encrypt the entered password using SHA256
+    const hash = crypto.createHash('sha256');
+    hash.update(newPassword);
+    const encryptedPassword = hash.digest('hex');
+
+    // Update the user password in the database
+    const updatedUser = await prisma.user.update({
+      where: { id: String(userId) }, // Convert id to string
+      data: { password: encryptedPassword }
+    });
+
+    // Render the edit user page with the updated user data
+    res.render('admin/adminedituser', {
+      title: 'Edit User Data',
+      user: updatedUser
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
+
 
 
 

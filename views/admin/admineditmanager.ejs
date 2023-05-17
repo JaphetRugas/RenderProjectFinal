@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Manager Management Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/css/bootstrap.min.css">
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/admin/admindashboard">Admin Management Dashboard</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="/admin/adminprofile">Profile</a>
+            </li>  
+            <li class="nav-item">
+              <a class="nav-link" aria-current="page" href="/admin/logout">Logout</a>
+            </li>  
+          </ul> 
+        </div>
+      </div>
+    </nav>
+    
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/register">Create User</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#createUserNav" aria-controls="createUserNav" aria-expanded="false" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="createUserNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/admindashboard">Admin Records</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/managerdashboard">Manager Records</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/userdashboard">User Records</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container mt-5">
+        <h1>Edit Manager Data</h1>
+        <div class="row">
+          <div class="col-md-6">
+            <form action="/admin/admineditmanagerrecord" method="post">
+              <input type="hidden" name="userId" value="<%= user.id %>">
+              <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" value="<%= user.email %>" required>
+              </div>
+              <div class="form-group">
+                <label for="usertype">User Type:</label>
+                <select class="form-control" id="usertype" name="usertype" required> 
+                  <option value="Manager" <%= user.usertype === 'Manager' ? 'selected' : '' %>>Manager</option>
+                  <option value="User" <%= user.usertype === 'User' ? 'selected' : '' %>>User</option>
+                </select>
+              </div>
+              <br>
+              <button type="submit" class="btn btn-primary">Update Data</button>
+              <a href="/admin/managerdashboard" class="btn btn-secondary">Cancel</a>
+            </form>
+          </div>
+          <div class="col-md-6">
+            <form action="/admin/adminupdatemanagerpassword" method="post">
+              <input type="hidden" name="userId" value="<%= user.id %>">
+              <div class="form-group">
+                <label for="newPassword">New Password:</label>
+                <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">Confirm Password:</label>
+                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+              </div>
+              <br>
+              <button type="submit" class="btn btn-primary">Update Password</button>
+              <a href="/admin/managerdashboard" class="btn btn-secondary">Cancel</a>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      
+          
+    </div>  
+      <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-n/4gHWY7TPBZj7Fk8g9WEQ0tJvQ+fdyG/m8iXMHuZQM4XUOjuj9ZzQGsbyRocI2IJHVv5h0ST2qvQa0mGfHv8w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <!-- Bootstrap Bundle -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.0.0-alpha2/js/bootstrap.bundle.min.js"></script>
+
+  </body>
+</html>
