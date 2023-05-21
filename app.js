@@ -41,8 +41,9 @@ app.use(function(err, req, res, next) {
 
   // check if the user is logged in
   if (req.session.user) {
-    // render the appropriate page based on the user type
+    // render the appropriate page based on the user type 
     switch (req.session.user.usertype) {
+    
       case 'Admin':
         res.redirect('/admin/admindashboard');
         break;

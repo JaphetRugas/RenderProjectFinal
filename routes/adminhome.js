@@ -1,11 +1,14 @@
 var express = require('express');
-var router = express.Router();
-const crypto = require('crypto');
+var router = express.Router(); 
 const bcrypt = require('bcrypt');
+const Joi = require('joi'); 
+const validator = require('validator');
 
 const {PrismaClient} = require("@prisma/client");
 const { clearScreenDown } = require('readline');
-const prisma = new PrismaClient()
+const prisma = new PrismaClient() 
+ 
+
 
 /* GET admin page. */
 router.get('/admin/admindashboard', async function(req, res, next) {
@@ -149,13 +152,9 @@ router.post('/admin/adminprofiledeleteconfirm', async function(req, res, next) {
     const dbUser = await prisma.user.findUnique({ where: { id: user.id } });
     const storedPassword = dbUser.password;
 
-    // Hash the entered password using SHA256
-    const hash = crypto.createHash('sha256');
-    hash.update(password);
-    const enteredPassword = hash.digest('hex');
-
-    // Check if the entered password matches the stored password
-    if (enteredPassword !== storedPassword) {
+   // Check if the entered password matches the stored password
+    const passwordMatch = await bcrypt.compare(password, storedPassword);
+    if (!passwordMatch) {
       // If passwords don't match, render the delete confirmation page with an error message
       return res.render('admin/adminprofiledelete', { title: 'Delete Admin Profile', user: user, error: 'Incorrect password. Deletion failed.' });
     }
@@ -187,12 +186,10 @@ router.post('/admin/updatepassword', async function(req, res, next) {
   try {
     const user = req.session.user; // Fetch the user data from session
     const { oldPassword, newPassword, confirmNewPassword } = req.body;
-
+ 
     // Check if the old password matches the registered password
-    const hash = crypto.createHash('sha256');
-    hash.update(oldPassword);
-    const encryptedOldPassword = hash.digest('hex');
-    if (encryptedOldPassword !== user.password) {
+    const passwordMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!passwordMatch) {
       // If the old password does not match, show an error message
       res.render('admin/adminprofile', { error: 'Incorrect old password.' });
       return;
@@ -205,16 +202,15 @@ router.post('/admin/updatepassword', async function(req, res, next) {
       return;
     }
 
-    // Encrypt the new password using SHA256
-    const hash2 = crypto.createHash('sha256');
-    hash2.update(newPassword);
-    const encryptedNewPassword = hash2.digest('hex');
+      // Hash the new password using bcrypt
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Update the user's password in the database
     await prisma.user.update({
-      where: { id: user.id },
-      data: { password: encryptedNewPassword }
+      where: { id: String(user.id) },
+      data: { password: hashedPassword }
     });
+
 
     // Redirect to dashboard page with success message
     res.render('admin/adminprofile', { success: 'Password updated successfully.' });
@@ -234,13 +230,9 @@ router.post('/admin/admindeletemanager', async function(req, res, next) {
       return;
     }
 
-    // Encrypt the entered password using SHA256
-    const hash = crypto.createHash('sha256');
-    hash.update(password);
-    const encryptedPassword = hash.digest('hex');
-
-    // Compare the encrypted password with the stored encrypted password
-    if (encryptedPassword !== adminUser.password) {
+    // Compare the entered password with the stored password
+    const passwordMatch = await bcrypt.compare(password, adminUser.password);
+    if (!passwordMatch) {
       res.redirect('/admin/managerdashboard');
       return;
     }
@@ -253,6 +245,7 @@ router.post('/admin/admindeletemanager', async function(req, res, next) {
     res.render('admin/managerdashboard', { title: 'Manager Dashboard', user: adminUser, error: 'Error occurred during deletion. Please try again.' });
   }
 });
+
 
 
 
@@ -298,16 +291,36 @@ router.post('/admin/admineditmanagerrecord', async function(req, res, next) {
 
     const { userId, email, usertype } = req.body; // Retrieve the form data
 
+    // Validate email
+    if (!validator.isEmail(email)) {
+      return res.render('admin/admineditmanager', {
+        title: 'Edit Manager Data',
+        user: { id: userId },
+        error: 'Invalid email address.'
+      });
+    }
+
+    // Check if email already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser && existingUser.id !== userId) {
+      return res.render('admin/admineditmanager', {
+        title: 'Edit Manager Data',
+        user: { id: userId },
+        error: 'Email already exists.'
+      });
+    }
+
     // Update the user record in the database
     const updatedUser = await prisma.user.update({
       where: { id: String(userId) }, // Convert id to string
       data: { email, usertype }
     });
     
-     // Render the edit manager page with the updated user data
+     // Render the edit manager page with the updated user data and success message
      res.render('admin/admineditmanager', {
       title: 'Edit Manager Data',
-      user: updatedUser
+      user: updatedUser,
+      success: 'Manager data updated successfully.'
     });
   } catch (err) {
     console.error(err);
@@ -331,16 +344,25 @@ router.post('/admin/adminupdatemanagerpassword', async function(req, res, next) 
       // Passwords don't match, handle the error
       res.render('admin/admineditmanager', {
         title: 'Update Manager Password',
-        user: { id: userId },
+        user: { id: String(userId) },
         error: 'Passwords do not match.'
       });
       return;
     }
 
-    // Encrypt the entered password using SHA256
-    const hash = crypto.createHash('sha256');
-    hash.update(newPassword);
-    const encryptedPassword = hash.digest('hex');
+    // Validate password against password policy
+    const { error } = passwordPolicy.validate({ password: newPassword });
+    if (error) {
+      return res.render('admin/admineditmanager', {
+        title: 'Update Manager Password',
+        user: { id: String(userId) },
+        error: error.details[0].message
+      });
+    }
+
+    // Encrypt the entered password using bcrypt
+    const saltRounds = 10; // Number of salt rounds for bcrypt
+    const encryptedPassword = await bcrypt.hash(newPassword, saltRounds);
 
     // Update the user password in the database
     const updatedUser = await prisma.user.update({
@@ -348,10 +370,11 @@ router.post('/admin/adminupdatemanagerpassword', async function(req, res, next) 
       data: { password: encryptedPassword }
     });
 
-    // Render the edit manager page with the updated user data
+    // Render the edit manager page with the updated user data and success message
     res.render('admin/admineditmanager', {
       title: 'Edit Manager Data',
-      user: updatedUser
+      user: updatedUser,
+      success: 'Manager password updated successfully.'
     });
   } catch (err) {
     console.error(err);
@@ -361,7 +384,9 @@ router.post('/admin/adminupdatemanagerpassword', async function(req, res, next) 
 
 
 
-/* POST delete user record */
+
+
+// POST delete user record
 router.post('/admin/admindeleteuser', async function(req, res, next) {
   try {
     const { userId, password } = req.body;
@@ -371,13 +396,9 @@ router.post('/admin/admindeleteuser', async function(req, res, next) {
       return;
     }
 
-    // Encrypt the entered password using SHA256
-    const hash = crypto.createHash('sha256');
-    hash.update(password);
-    const encryptedPassword = hash.digest('hex');
-
-    // Compare the encrypted password with the stored encrypted password
-    if (encryptedPassword !== userUser.password) {
+    // Compare the entered password with the stored encrypted password
+    const passwordMatch = await bcrypt.compare(password, userUser.password);
+    if (!passwordMatch) {
       res.redirect('/admin/userdashboard');
       return;
     }
@@ -390,6 +411,7 @@ router.post('/admin/admindeleteuser', async function(req, res, next) {
     res.render('admin/userdashboard', { title: 'User Dashboard', user: userUser, error: 'Error occurred during deletion. Please try again.' });
   }
 });
+
 
 
 
@@ -435,16 +457,36 @@ router.post('/admin/adminedituserrecord', async function(req, res, next) {
 
     const { userId, email, usertype } = req.body; // Retrieve the form data
 
+    // Validate email
+    if (!validator.isEmail(email)) {
+      return res.render('admin/adminedituser', {
+        title: 'Edit User Data',
+        user: { id: userId },
+        error: 'Invalid email address.'
+      });
+    }
+
+    // Check if email already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser && existingUser.id !== userId) {
+      return res.render('admin/adminedituser', {
+        title: 'Edit User Data',
+        user: { id: userId },
+        error: 'Email already exists.'
+      });
+    }
+
     // Update the user record in the database
     const updatedUser = await prisma.user.update({
       where: { id: String(userId) }, // Convert id to string
       data: { email, usertype }
     });
     
-     // Render the edit user page with the updated user data
-     res.render('admin/adminedituser', {
+    // Render the edit user page with the updated user data and success message
+    res.render('admin/adminedituser', {
       title: 'Edit User Data',
-      user: updatedUser
+      user: updatedUser,
+      success: 'User data updated successfully.'
     });
   } catch (err) {
     console.error(err);
@@ -474,10 +516,19 @@ router.post('/admin/adminupdateuserpassword', async function(req, res, next) {
       return;
     }
 
-    // Encrypt the entered password using SHA256
-    const hash = crypto.createHash('sha256');
-    hash.update(newPassword);
-    const encryptedPassword = hash.digest('hex');
+    // Validate password against password policy
+    const { error } = passwordPolicy.validate({ password: newPassword });
+    if (error) {
+      return res.render('admin/adminedituser', {
+        title: 'Update User Password',
+        user: { id: userId },
+        error: error.details[0].message
+      });
+    }
+
+    // Encrypt the entered password using bcrypt
+    const saltRounds = 10; // Number of salt rounds for bcrypt
+    const encryptedPassword = await bcrypt.hash(newPassword, saltRounds);
 
     // Update the user password in the database
     const updatedUser = await prisma.user.update({
@@ -485,10 +536,11 @@ router.post('/admin/adminupdateuserpassword', async function(req, res, next) {
       data: { password: encryptedPassword }
     });
 
-    // Render the edit user page with the updated user data
+    // Render the edit user page with the updated user data and success message
     res.render('admin/adminedituser', {
       title: 'Edit User Data',
-      user: updatedUser
+      user: updatedUser,
+      success: 'User password updated successfully.'
     });
   } catch (err) {
     console.error(err);
@@ -497,6 +549,18 @@ router.post('/admin/adminupdateuserpassword', async function(req, res, next) {
 });
 
 
+
+
+// Password policy setting
+const passwordPolicy = Joi.object({
+  password: Joi.string()
+    .pattern(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/)
+    .required()
+    .messages({
+      'string.pattern.base': 'Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character',
+      'any.required': 'Password is required'
+    })
+});
 
 
 /* GET logout page. */

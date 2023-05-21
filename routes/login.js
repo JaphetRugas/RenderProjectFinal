@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const session = require('express-session');
-const { PrismaClient } = require("@prisma/client");
-const crypto = require('crypto');
+const { PrismaClient } = require("@prisma/client"); 
+const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
 
 // Initialize the session middleware
@@ -12,13 +12,14 @@ router.use(session({
   saveUninitialized: true
 }));
 
+
 router.get('/login', function(req, res, next) {
   // If user is already logged in, redirect to appropriate page
-  if (req.session.user) {
+  if (req.session.user) { 
     switch (req.session.user.usertype) {
-      case "Admin":
+      case 'Admin':
         res.redirect("/admin/admindashboard");
-        break;
+        break; 
       case "Manager":
         res.redirect("/manager/manager");
         break;
@@ -26,35 +27,36 @@ router.get('/login', function(req, res, next) {
         res.redirect("/user/user");
         break;
       default:
-        res.status(400).send("Invalid userType");
+        res.render('error', { message: 'Invalid userType: ' + user.usertype });
+        break;
     }
     return;
   }
 
   // Otherwise, render the login page
-  res.render('login', { title: 'Login' });
+  res.render('login', { title: 'Login', error: undefined, success: undefined });
 });
  
-/* POST login. */
+// POST login
 router.post('/login', async function(req, res, next) {
   const { email, password } = req.body;
   try {
     const user = await prisma.user.findUnique({
       where: { email: email }
     });
-    
+
     if (!user) {
-      res.status(401).send("Invalid email or password");
+      res.render('login', { title: 'Login', error: 'Email not registered', success: undefined });
       return;
     }
 
-    // Encrypt the password entered by the user
-    const encryptedPassword = crypto.createHash('sha256').update(password).digest('hex');
+    // Compare the entered password with the hashed password in the database
+    const passwordMatch = await bcrypt.compare(password, user.password);
 
-    if (user.password === encryptedPassword) {
+    if (passwordMatch) {
       // Save user data in session
       req.session.user = user;
-      
+
       // Redirect user based on their userType
       switch (user.usertype) {
         case "Admin":
@@ -67,15 +69,17 @@ router.post('/login', async function(req, res, next) {
           res.redirect("/user/user");
           break;
         default:
-          res.status(400).send("Invalid userType");
+          res.render('error', { message: 'Invalid userType: ' + user.usertype });
+          break;
       }
     } else {
-      res.status(401).send("Invalid email or password");
+      res.render('login', { title: 'Login', error: 'Password incorrect!', success: undefined });
     }
   } catch (error) {
     console.error(error);
     res.status(500).send("Something went wrong");
   }
 });
+
 
 module.exports = router;
