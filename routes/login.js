@@ -18,7 +18,7 @@ router.get('/login', function(req, res, next) {
   if (req.session.user) { 
     switch (req.session.user.usertype) {
       case 'Admin':
-        res.redirect("/admin/admindashboard");
+        res.redirect("/admin/admincharts");
         break; 
       case "Manager":
         res.redirect("/manager/manager");
@@ -60,7 +60,7 @@ router.post('/login', async function(req, res, next) {
       // Redirect user based on their userType
       switch (user.usertype) {
         case "Admin":
-          res.redirect("/admin/admindashboard");
+          res.redirect("/admin/admincharts");
           break;
         case "Manager":
           res.redirect("/manager/manager");

@@ -548,6 +548,32 @@ router.post('/admin/adminupdateuserpassword', async function(req, res, next) {
   }
 });
 
+// admin/admincharts route 
+router.get('/admin/admincharts', async function(req, res, next) {
+  try {
+    const user = req.session.user; // Fetch the user data from session
+    if (!user || user.usertype !== 'Admin') {
+      // If user is not logged in or not an admin, redirect to login page
+      res.redirect('/login');
+      return;
+    }
+
+    const adminCount = await prisma.user.count({ where: { usertype: 'Admin' } });
+    const managerCount = await prisma.user.count({ where: { usertype: 'Manager' } });
+    const userCount = await prisma.user.count({ where: { usertype: 'User' } });
+
+    // Render the admincharts page with the counts
+    res.render('admin/admincharts', {
+      title: 'Admin Charts',
+      adminCount,
+      managerCount,
+      userCount
+    });
+  } catch (err) {
+    console.error(err);
+    next(err);
+  }
+});
 
 
 

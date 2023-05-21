@@ -45,7 +45,7 @@ app.use(function(err, req, res, next) {
     switch (req.session.user.usertype) {
     
       case 'Admin':
-        res.redirect('/admin/admindashboard');
+        res.redirect('/admin/admincharts');
         break;
       case 'Manager':
         res.redirect('/manager/manager');
