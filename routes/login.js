@@ -108,16 +108,17 @@ router.post('/forgot-password', async (req, res, next) => {
   const email = req.body.email;
 
   try {
-    // Check if the email is valid and belongs to an admin
-  
-    const admin = await prisma.user.findUnique({
-      where: { email: email }
+   // Check if the email is valid and belongs to an admin
+    const user = await prisma.user.findUnique({
+      where: { email: email },
+      select: { usertype: true }
     });
 
-    if (!admin) {
+    if (!user || user.usertype !== 'Admin') {
       res.render('forgot-password', { title: 'Forgot Password', error: 'Invalid email address', success: undefined });
       return;
     }
+
 
     // Generate a new password based on the password policy
     const newPassword = generatePassword();
@@ -125,11 +126,12 @@ router.post('/forgot-password', async (req, res, next) => {
     // Hash the new password using bcrypt
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update the admin's password in the database
+  // Update the user's password in the database
     await prisma.user.update({
-      where: { id: admin.id },
+      where: { email: email }, // Provide the user's email or other unique identifier
       data: { password: hashedPassword }
     });
+
 
     // Render the success page with the new password
     res.render('success', { message: 'Password reset successful. Your new password is: ' + newPassword });
@@ -165,7 +167,6 @@ function generatePassword() {
 }
 
 router.get('/success', function(req, res, next) {
-  
   // If user is already logged in, redirect to appropriate page
   if (req.session.user) { 
     switch (req.session.user.usertype) {
@@ -179,13 +180,19 @@ router.get('/success', function(req, res, next) {
         res.redirect("/user/user");
         break;
       default:
-        res.render('error', { message: 'Invalid userType: ' + user.usertype });
+        res.render('error', { message: 'Invalid userType: ' + req.session.user.usertype });
         break;
     }
     return;
   }
+  if (!req.query.message) {
+    res.redirect('/forgot-password');
+    return;
+  }
+
   res.render('success', { title: 'Success', message: '' });
 });
+
 
 router.post('/success', function(req, res, next) {
   res.redirect('/login');
