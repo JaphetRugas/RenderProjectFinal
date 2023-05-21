@@ -165,6 +165,25 @@ function generatePassword() {
 }
 
 router.get('/success', function(req, res, next) {
+  
+  // If user is already logged in, redirect to appropriate page
+  if (req.session.user) { 
+    switch (req.session.user.usertype) {
+      case 'Admin':
+        res.redirect("/admin/admincharts");
+        break; 
+      case "Manager":
+        res.redirect("/manager/manager");
+        break;
+      case "User":
+        res.redirect("/user/user");
+        break;
+      default:
+        res.render('error', { message: 'Invalid userType: ' + user.usertype });
+        break;
+    }
+    return;
+  }
   res.render('success', { title: 'Success', message: '' });
 });
 
