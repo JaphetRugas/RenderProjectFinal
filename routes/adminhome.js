@@ -600,4 +600,112 @@ router.get('/admin/logout', function(req, res, next) {
   })
 });
 
+// GET admin login page
+router.get('/admin-login', function(req, res) {
+    // If user is already logged in, redirect to appropriate page
+    if (req.session.user) { 
+      switch (req.session.user.usertype) {
+        case 'Admin':
+          res.redirect("/admin/admincharts");
+          break; 
+        case "Manager":
+          res.redirect("/manager/manager");
+          break;
+        case "User":
+          res.redirect("/user/user");
+          break;
+        default:
+          res.render('error', { message: 'Invalid userType: ' + user.usertype });
+          break;
+      }
+      return;
+    }
+    
+  res.render('admin-login', { title: 'Admin Login', error: null });
+});
+
+// POST admin login
+router.post('/admin-login', async function(req, res) {
+  const { email, password } = req.body;
+  const user = await prisma.user.findUnique({
+    where: { email: email }
+  });
+
+
+  try {
+    // Check if the email is mjjrrugas@tip.edu.ph
+    if (email !== 'mjjrrugas@tip.edu.ph') {
+      return res.render('admin-login', { title: 'Admin Login', error: 'Access denied' });
+    }
+
+    // Find the admin user by email
+    const adminUser = await prisma.user.findUnique({ where: { email } });
+
+    if (!adminUser) {
+      return res.render('admin-login', { title: 'Admin Login', error: 'Email not registered' });
+    }
+
+    // Compare the entered password with the hashed password in the database
+    const passwordMatch = await bcrypt.compare(password, adminUser.password);
+
+    if (passwordMatch) {
+      // Store admin user information in session
+      
+      req.session.user = user; 
+      res.redirect('/admin-backup'); // Redirect to the admin backup page
+    } else {
+      res.render('admin-login', { title: 'Admin Login', error: 'Password incorrect' });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Something went wrong');
+  }
+});
+
+// GET admin backup page
+router.get('/admin-backup', function(req, res) {
+  
+ 
+  const user = req.session.user; // Fetch the user data from session
+  if (!user || user.usertype !== 'Admin') {
+    // If user is not logged in or not an admin, redirect to login page
+    res.redirect('/admin-login');
+    return;
+  }
+
+  res.render('admin-backup', { title: 'Admin Backup', successMessage: null, errorMessage: null });
+});
+
+// POST admin backup
+router.post('/admin-backup', async function(req, res, next) {
+
+  const user = req.session.user; // Fetch the user data from session
+  if (!user || user.usertype !== 'Admin') {
+    // If user is not logged in or not an admin, redirect to login page
+    res.redirect('/admin-login');
+    return;
+  }
+
+  try {
+    // Retrieve all users from the User model
+    const users = await prisma.user.findMany();
+
+    // Create backup entries in the UserBackup model
+    await prisma.userBackup.createMany({
+      data: users.map(user => ({
+        email: user.email,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        password: user.password,
+        usertype: user.usertype
+      }))
+    });
+    
+    res.redirect('/admin-backup');
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Something went wrong.');
+  }
+});
+
 module.exports = router;

@@ -11,11 +11,20 @@ datasource db {
 }
 
 model User {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId 
-  email          String   @unique 
-  firstname      String? 
-  lastname       String? 
-  password       String?
-  usertype       String?
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  email     String  @unique
+  firstname String?
+  lastname  String?
+  password  String?
+  usertype  String?
 }
 
+model UserBackup {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  email     String
+  firstname String?
+  lastname  String?
+  password  String?
+  usertype  String?
+  backupAt  DateTime @default(now())
+}

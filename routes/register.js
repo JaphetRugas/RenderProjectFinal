@@ -32,11 +32,15 @@ router.get('/register', async function(req, res, next) {
 
 // POST register page
 router.post('/register', async function(req, res, next) {
-  const { email, firstname, lastname, password, usertype } = req.body;
-
   try {
+    // Sanitize user input
+    const { email, firstname, lastname, password, usertype } = req.body;
+    const sanitizedEmail = validator.normalizeEmail(email);
+    const sanitizedFirstname = validator.escape(firstname);
+    const sanitizedLastname = validator.escape(lastname);
+
     // Validate email
-    if (!validator.isEmail(email)) {
+    if (!validator.isEmail(sanitizedEmail)) {
       return res.render('register', { title: 'Register', error: 'Invalid email address.' });
     }
 
@@ -50,7 +54,7 @@ router.post('/register', async function(req, res, next) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Check if email already exists
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const existingUser = await prisma.user.findUnique({ where: { email: sanitizedEmail } });
     if (existingUser) {
       return res.render('register', { title: 'Register', error: 'Email already exists.' });
     }
@@ -58,9 +62,9 @@ router.post('/register', async function(req, res, next) {
     // Create new user
     await prisma.user.create({
       data: {
-        email,
-        firstname,
-        lastname,
+        email: sanitizedEmail,
+        firstname: sanitizedFirstname,
+        lastname: sanitizedLastname,
         password: hashedPassword,
         usertype
       },
